@@ -42,44 +42,57 @@ import static android.Manifest.permission.READ_CONTACTS;
 /**
  * A login screen that offers login via email/password.
  */
-public class LoginActivity extends AppCompatActivity implements Callback<String>
+public class LoginActivity extends AppCompatActivity
 {
     // UI references.
-    private AutoCompleteTextView mEmailView;
-    private EditText mPasswordView;
-    private View mProgressView;
-    private View mLoginFormView;
+    //private AutoCompleteTextView mEmailView;
+    //private EditText mPasswordView;
+    //private View mProgressView;
+    //private View mLoginFormView;
+    private LoginViewHolder vh;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        vh = new LoginViewHolder(this);
+
         // Set up the login form.
-        mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
+        //mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
 
-        mPasswordView = (EditText) findViewById(R.id.password);
-        mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
-                if (id == EditorInfo.IME_ACTION_DONE || id == EditorInfo.IME_NULL) {
-                    attemptLogin();
-                    return true;
-                }
-                return false;
-            }
-        });
+        //mPasswordView = (EditText) findViewById(R.id.password);
+        //mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+         //   @Override
+         //   public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
+          //      if (id == EditorInfo.IME_ACTION_DONE || id == EditorInfo.IME_NULL) {
+          //          attemptLogin();
+          //          return true;
+          //      }
+          //      return false;
+          //  }
+        //});
 
-        Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
-        mEmailSignInButton.setOnClickListener(new OnClickListener() {
+        //Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
+        //Button mRegisterButton = (Button) findViewById(R.id.register);
+
+        vh.mSignInButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 attemptLogin();
             }
         });
+        vh.mRegisterButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                attemptRegister();
+            }
+        });
 
-        mLoginFormView = findViewById(R.id.login_form);
-        mProgressView = findViewById(R.id.login_progress);
+
     }
+
+
 
     /**
      * Attempts to sign in or register the account specified by the login form.
@@ -89,39 +102,35 @@ public class LoginActivity extends AppCompatActivity implements Callback<String>
     private void attemptLogin()
     {
         // Reset errors.
-        mEmailView.setError(null);
-        mPasswordView.setError(null);
+        vh.mEmailView.setError(null);
+        vh.mPasswordView.setError(null);
 
         // Store values at the time of the login attempt.
-        String email = mEmailView.getText().toString();
-        String password = mPasswordView.getText().toString();
+        String email = vh.mEmailView.getText().toString();
+        String password = vh.mPasswordView.getText().toString();
 
-        boolean cancel = false;
-        View focusView = null;
+//        boolean cancel = false;
+//        View focusView = null;
+//
+//        // Check for a valid password, if the user entered one.
+//        if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
+//            vh.mPasswordView.setError(getString(R.string.error_invalid_password));
+//            focusView = vh.mPasswordView;
+//            cancel = true;
+//        }
+//
+//        // Check for a valid email address.
+//        if (TextUtils.isEmpty(email)) {
+//            vh.mEmailView.setError(getString(R.string.error_field_required));
+//            focusView = vh.mEmailView;
+//            cancel = true;
+//        } else if (!isEmailValid(email)) {
+//            vh.mEmailView.setError(getString(R.string.error_invalid_email));
+//            focusView = vh.mEmailView;
+//            cancel = true;
+//        }
 
-        // Check for a valid password, if the user entered one.
-        if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
-            mPasswordView.setError(getString(R.string.error_invalid_password));
-            focusView = mPasswordView;
-            cancel = true;
-        }
-
-        // Check for a valid email address.
-        if (TextUtils.isEmpty(email)) {
-            mEmailView.setError(getString(R.string.error_field_required));
-            focusView = mEmailView;
-            cancel = true;
-        } else if (!isEmailValid(email)) {
-            mEmailView.setError(getString(R.string.error_invalid_email));
-            focusView = mEmailView;
-            cancel = true;
-        }
-
-        if (cancel) {
-            // There was an error; don't attempt login and focus the first
-            // form field with an error.
-            focusView.requestFocus();
-        } else {
+        if (validateForm(email, password)) {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
@@ -129,6 +138,54 @@ public class LoginActivity extends AppCompatActivity implements Callback<String>
             loginAsync(new User(email, password));
         }
     }
+
+    private boolean validateForm(String email, String password)
+    {
+        View focusView = null;
+        boolean cancel = false;
+        // Check for a valid password, if the user entered one.
+        if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
+            vh.mPasswordView.setError(getString(R.string.error_invalid_password));
+            focusView = vh.mPasswordView;
+            cancel = true;
+        }
+
+        // Check for a valid email address.
+        if (TextUtils.isEmpty(email)) {
+            vh.mEmailView.setError(getString(R.string.error_field_required));
+            focusView = vh.mEmailView;
+            cancel = true;
+        } else if (!isEmailValid(email)) {
+            vh.mEmailView.setError(getString(R.string.error_invalid_email));
+            focusView = vh.mEmailView;
+            cancel = true;
+        }
+
+        if(cancel)
+        {
+            focusView.requestFocus();
+            return false;
+        }
+        return true;
+    }
+
+    private void attemptRegister()
+    {
+        vh.mEmailView.setError(null);
+        vh.mPasswordView.setError(null);
+
+        String email = vh.mEmailView.getText().toString();
+        String password = vh.mPasswordView.getText().toString();
+
+        if(validateForm(email, password))
+        {
+            showProgress(true);
+
+            registerAsync();
+        }
+    }
+
+
 
     private boolean isEmailValid(String email) {
         return email.contains("@");
@@ -142,7 +199,67 @@ public class LoginActivity extends AppCompatActivity implements Callback<String>
     {
         try
         {
-            MainActivity.service.login(user).enqueue(this);
+            MainActivity.service.login(user).enqueue(new Callback<String>()
+            {
+                @Override
+                public void onResponse(Call<String> call, Response<String> response)
+                {
+                    if(response.isSuccessful() && response.body() != null)
+                    {
+                         MainActivity.authToken = response.body();
+                         //Start new activity
+                     }
+                    else
+                    {
+                        invalidLogin();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<String> call, Throwable t)
+                {
+                    Toast.makeText(LoginActivity.this, getString(R.string.error_unknown_error), Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+        catch(Exception e)
+        {
+            Toast.makeText(this, getString(R.string.error_unknown_error), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void registerAsync(User user)
+    {
+        try
+        {
+            MainActivity.service.register(user).enqueue(new Callback<CustomHttpResponse>()
+            {
+                @Override
+                public void onResponse(Call<CustomHttpResponse> call, Response<CustomHttpResponse> response)
+                {
+                    if(response.isSuccessful() && response.body() != null)
+                    {
+                        if(response.body().Sucess)
+                        {
+                            //Start new activity
+                        }
+                        else
+                        {
+                            invalidLogin();
+                        }
+                    }
+                    else
+                    {
+                        invalidLogin();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<CustomHttpResponse> call, Throwable t)
+                {
+                    Toast.makeText(LoginActivity.this, getString(R.string.error_unknown_error), Toast.LENGTH_SHORT).show();
+                }
+            });
         }
         catch(Exception e)
         {
@@ -160,54 +277,83 @@ public class LoginActivity extends AppCompatActivity implements Callback<String>
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
             int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
 
-            mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-            mLoginFormView.animate().setDuration(shortAnimTime).alpha(
+            vh.mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+            vh.mLoginFormView.animate().setDuration(shortAnimTime).alpha(
                     show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
                 @Override
                 public void onAnimationEnd(Animator animation) {
-                    mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+                    vh.mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
                 }
             });
 
-            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-            mProgressView.animate().setDuration(shortAnimTime).alpha(
+            vh.mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+            vh.mProgressView.animate().setDuration(shortAnimTime).alpha(
                     show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
                 @Override
                 public void onAnimationEnd(Animator animation) {
-                    mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+                    vh.mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
                 }
             });
         } else {
             // The ViewPropertyAnimator APIs are not available, so simply show
             // and hide the relevant UI components.
-            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-            mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+            vh.mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+            vh.mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
         }
     }
 
-    @Override
-    public void onResponse(Call<String> call, Response<String> response) {
-        if(response.isSuccessful() && response.body() != null)
-        {
-            MainActivity.authToken = response.body();
-
-        }
-        else
-        {
-            invalidLogin();
-        }
-    }
+//    @Override
+//    public void onResponse(Call<String> call, Response<String> response) {
+//        if(response.isSuccessful() && response.body() != null)
+//        {
+//            MainActivity.authToken = response.body();
+//
+//        }
+//        else
+//        {
+//            invalidLogin();
+//        }
+//    }
 
     private void invalidLogin() {
-        mEmailView.setError(getString(R.string.error_incorrect_email));
-        mPasswordView.setError(getString(R.string.error_incorrect_password));
+        vh.mEmailView.setError(getString(R.string.error_incorrect_email));
+        vh.mPasswordView.setError(getString(R.string.error_incorrect_password));
 
-        mEmailView.requestFocus();
+        vh.mEmailView.requestFocus();
     }
 
-    @Override
-    public void onFailure(Call<String> call, Throwable t) {
-        Toast.makeText(this, getString(R.string.error_unknown_error), Toast.LENGTH_SHORT).show();
+//    @Override
+////    public void onFailure(Call<String> call, Throwable t) {
+////        Toast.makeText(this, getString(R.string.error_unknown_error), Toast.LENGTH_SHORT).show();
+////    }
+
+    private class LoginViewHolder
+    {
+        public AutoCompleteTextView mEmailView;
+        public EditText mPasswordView;
+
+        public Button mSignInButton;
+        public Button mRegisterButton;
+
+        public View mLoginFormView;
+        public View mProgressView;
+
+        private LoginActivity loginActivity;
+
+        public LoginViewHolder(LoginActivity loginActivity)
+        {
+            this.loginActivity = loginActivity;
+
+            mEmailView = findViewById(R.id.email);
+            mPasswordView = findViewById(R.id.password);
+
+            mSignInButton = findViewById(R.id.email_sign_in_button);
+            mRegisterButton = findViewById(R.id.register);
+
+            mLoginFormView = findViewById(R.id.login_form);
+            mProgressView = findViewById(R.id.login_progress);
+        }
     }
+
 }
 
