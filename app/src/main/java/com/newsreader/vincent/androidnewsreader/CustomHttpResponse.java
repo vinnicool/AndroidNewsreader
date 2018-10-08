@@ -1,14 +1,14 @@
 package com.newsreader.vincent.androidnewsreader;
 
 public class CustomHttpResponse {
-    public boolean Sucess;
+    public boolean Success;
     public String Message;
 
     public  CustomHttpResponse(){}
 
     public CustomHttpResponse(boolean sucess, String message)
     {
-        this.Sucess = sucess;
+        this.Success = sucess;
         this.Message = message;
     }
 }

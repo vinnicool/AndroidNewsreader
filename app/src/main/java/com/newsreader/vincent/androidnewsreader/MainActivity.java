@@ -13,6 +13,7 @@ public class MainActivity extends AppCompatActivity {
     public static Retrofit retrofit;
     public static ApiServices service;
     public static String authToken;
+    public static SharedPreferences preferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,13 +26,13 @@ public class MainActivity extends AppCompatActivity {
                 .build();
         service = retrofit.create(ApiServices.class);
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        String email = prefs.getString("EmailToken", null);
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        String username = preferences.getString("UsernameToken", null);
         if(authToken != null)
         {
 
         }
-        else if(email != null)
+        else if(username != null)
         {
 
         }

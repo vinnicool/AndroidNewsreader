@@ -2,50 +2,30 @@ package com.newsreader.vincent.androidnewsreader;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.annotation.TargetApi;
-import android.content.pm.PackageManager;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.app.LoaderManager.LoaderCallbacks;
-
-import android.content.CursorLoader;
-import android.content.Loader;
-import android.database.Cursor;
-import android.net.Uri;
-import android.os.AsyncTask;
 
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.text.TextUtils;
-import android.view.KeyEvent;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.inputmethod.EditorInfo;
-import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import static android.Manifest.permission.READ_CONTACTS;
-
 /**
- * A login screen that offers login via email/password.
+ * A login screen that offers login via username/password.
  */
 public class LoginActivity extends AppCompatActivity
 {
     // UI references.
-    //private AutoCompleteTextView mEmailView;
+    //private AutoCompleteTextView mUsernameView;
     //private EditText mPasswordView;
     //private View mProgressView;
     //private View mLoginFormView;
@@ -59,7 +39,7 @@ public class LoginActivity extends AppCompatActivity
         vh = new LoginViewHolder(this);
 
         // Set up the login form.
-        //mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
+        //mUsernameView = (AutoCompleteTextView) findViewById(R.id.email);
 
         //mPasswordView = (EditText) findViewById(R.id.password);
         //mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -96,17 +76,17 @@ public class LoginActivity extends AppCompatActivity
 
     /**
      * Attempts to sign in or register the account specified by the login form.
-     * If there are form errors (invalid email, missing fields, etc.), the
+     * If there are form errors (invalid username, missing fields, etc.), the
      * errors are presented and no actual login attempt is made.
      */
     private void attemptLogin()
     {
         // Reset errors.
-        vh.mEmailView.setError(null);
+        vh.mUsernameView.setError(null);
         vh.mPasswordView.setError(null);
 
         // Store values at the time of the login attempt.
-        String email = vh.mEmailView.getText().toString();
+        String username = vh.mUsernameView.getText().toString();
         String password = vh.mPasswordView.getText().toString();
 
 //        boolean cancel = false;
@@ -121,25 +101,25 @@ public class LoginActivity extends AppCompatActivity
 //
 //        // Check for a valid email address.
 //        if (TextUtils.isEmpty(email)) {
-//            vh.mEmailView.setError(getString(R.string.error_field_required));
-//            focusView = vh.mEmailView;
+//            vh.mUsernameView.setError(getString(R.string.error_field_required));
+//            focusView = vh.mUsernameView;
 //            cancel = true;
 //        } else if (!isEmailValid(email)) {
-//            vh.mEmailView.setError(getString(R.string.error_invalid_email));
-//            focusView = vh.mEmailView;
+//            vh.mUsernameView.setError(getString(R.string.error_invalid_email));
+//            focusView = vh.mUsernameView;
 //            cancel = true;
 //        }
 
-        if (validateForm(email, password)) {
+        if (validateForm(username, password)) {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
 
-            loginAsync(new User(email, password));
+            loginAsync(new User(username, password));
         }
     }
 
-    private boolean validateForm(String email, String password)
+    private boolean validateForm(String username, String password)
     {
         View focusView = null;
         boolean cancel = false;
@@ -150,14 +130,14 @@ public class LoginActivity extends AppCompatActivity
             cancel = true;
         }
 
-        // Check for a valid email address.
-        if (TextUtils.isEmpty(email)) {
-            vh.mEmailView.setError(getString(R.string.error_field_required));
-            focusView = vh.mEmailView;
+        // Check for a valid username address.
+        if (TextUtils.isEmpty(username)) {
+            vh.mUsernameView.setError(getString(R.string.error_field_required));
+            focusView = vh.mUsernameView;
             cancel = true;
-        } else if (!isEmailValid(email)) {
-            vh.mEmailView.setError(getString(R.string.error_invalid_email));
-            focusView = vh.mEmailView;
+        } else if (!isUsernameValid(username)) {
+            vh.mUsernameView.setError(getString(R.string.error_invalid_username));
+            focusView = vh.mUsernameView;
             cancel = true;
         }
 
@@ -171,24 +151,22 @@ public class LoginActivity extends AppCompatActivity
 
     private void attemptRegister()
     {
-        vh.mEmailView.setError(null);
+        vh.mUsernameView.setError(null);
         vh.mPasswordView.setError(null);
 
-        String email = vh.mEmailView.getText().toString();
+        String username = vh.mUsernameView.getText().toString();
         String password = vh.mPasswordView.getText().toString();
 
-        if(validateForm(email, password))
+        if(validateForm(username, password))
         {
             showProgress(true);
 
-            registerAsync();
+            registerAsync(new User(username, password));
         }
     }
 
-
-
-    private boolean isEmailValid(String email) {
-        return email.contains("@");
+    private boolean isUsernameValid(String username) {
+        return username.length() > 4;
     }
 
     private boolean isPasswordValid(String password) {
@@ -258,11 +236,13 @@ public class LoginActivity extends AppCompatActivity
                 public void onFailure(Call<CustomHttpResponse> call, Throwable t)
                 {
                     Toast.makeText(LoginActivity.this, getString(R.string.error_unknown_error), Toast.LENGTH_SHORT).show();
+                    showProgress(false);
                 }
             });
         }
-        catch(Exception e)
+        catch(Exception ex)
         {
+            Log.e(LoginActivity.class.toString(), ex.toString());
             invalidLogin();
         }
     }
@@ -316,10 +296,10 @@ public class LoginActivity extends AppCompatActivity
 //    }
 
     private void invalidLogin() {
-        vh.mEmailView.setError(getString(R.string.error_incorrect_email));
+        vh.mUsernameView.setError(getString(R.string.error_incorrect_username));
         vh.mPasswordView.setError(getString(R.string.error_incorrect_password));
 
-        vh.mEmailView.requestFocus();
+        vh.mUsernameView.requestFocus();
     }
 
 //    @Override
@@ -329,7 +309,7 @@ public class LoginActivity extends AppCompatActivity
 
     private class LoginViewHolder
     {
-        public AutoCompleteTextView mEmailView;
+        public AutoCompleteTextView mUsernameView;
         public EditText mPasswordView;
 
         public Button mSignInButton;
@@ -344,10 +324,10 @@ public class LoginActivity extends AppCompatActivity
         {
             this.loginActivity = loginActivity;
 
-            mEmailView = findViewById(R.id.email);
+            mUsernameView = findViewById(R.id.username);
             mPasswordView = findViewById(R.id.password);
 
-            mSignInButton = findViewById(R.id.email_sign_in_button);
+            mSignInButton = findViewById(R.id.username_sign_in_button);
             mRegisterButton = findViewById(R.id.register);
 
             mLoginFormView = findViewById(R.id.login_form);
