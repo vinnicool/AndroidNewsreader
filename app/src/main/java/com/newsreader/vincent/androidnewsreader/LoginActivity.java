@@ -2,6 +2,7 @@ package com.newsreader.vincent.androidnewsreader;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 
 import android.os.Build;
@@ -186,6 +187,8 @@ public class LoginActivity extends AppCompatActivity
                     {
                          MainActivity.authToken = response.body();
                          //Start new activity
+                         Intent intent = new Intent(LoginActivity.this, NewsOverviewActivity.class);
+                         startActivity(intent);
                      }
                     else
                     {
@@ -217,9 +220,11 @@ public class LoginActivity extends AppCompatActivity
                 {
                     if(response.isSuccessful() && response.body() != null)
                     {
-                        if(response.body().Sucess)
+                        if(response.body().Success)
                         {
                             //Start new activity
+                            Intent intent = new Intent(LoginActivity.this, NewsOverviewActivity.class);
+                            startActivity(intent);
                         }
                         else
                         {
