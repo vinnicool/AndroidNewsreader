@@ -11,7 +11,7 @@ import retrofit2.http.QueryMap;
 
 public interface ApiServices {
     @POST("Users/login")
-    Call<String> login(@Body User user);
+    Call<AuthTokenHttpResponse> login(@Body User user);
 
     @POST("Users/register")
     Call<CustomHttpResponse> register(@Body User user);

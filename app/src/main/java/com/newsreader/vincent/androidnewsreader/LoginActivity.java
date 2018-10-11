@@ -115,7 +115,7 @@ public class LoginActivity extends AppCompatActivity
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-
+            Utils.hideSoftKeyboard(this);
             loginAsync(new User(username, password));
         }
     }
@@ -167,49 +167,53 @@ public class LoginActivity extends AppCompatActivity
     }
 
     private boolean isUsernameValid(String username) {
-        return username.length() > 4;
+        return username.length() >= 4;
     }
 
     private boolean isPasswordValid(String password) {
-        return password.length() > 4;
+        return password.length() >= 4;
     }
 
     private void loginAsync(User user)
     {
         try
         {
-            MainActivity.service.login(user).enqueue(new Callback<String>()
+            MainActivity.service.login(user).enqueue(new Callback<AuthTokenHttpResponse>()
             {
                 @Override
-                public void onResponse(Call<String> call, Response<String> response)
+                public void onResponse(Call<AuthTokenHttpResponse> call, Response<AuthTokenHttpResponse> response)
                 {
                     if(response.isSuccessful() && response.body() != null)
                     {
-                         MainActivity.authToken = response.body();
+                         MainActivity.authToken = response.body().authToken;
                          //Start new activity
                          Intent intent = new Intent(LoginActivity.this, NewsOverviewActivity.class);
                          startActivity(intent);
                      }
                     else
                     {
+                        showProgress(false);
                         invalidLogin();
                     }
                 }
 
                 @Override
-                public void onFailure(Call<String> call, Throwable t)
+                public void onFailure(Call<AuthTokenHttpResponse> call, Throwable t)
                 {
+                    showProgress(false);
+                    Log.e(LoginActivity.class.toString(), "An excpetion ocurred",t);
                     Toast.makeText(LoginActivity.this, getString(R.string.error_unknown_error), Toast.LENGTH_SHORT).show();
                 }
             });
         }
         catch(Exception e)
         {
+            showProgress(false);
             Toast.makeText(this, getString(R.string.error_unknown_error), Toast.LENGTH_SHORT).show();
         }
     }
 
-    private void registerAsync(User user)
+    private void registerAsync(final User user)
     {
         try
         {
@@ -222,17 +226,20 @@ public class LoginActivity extends AppCompatActivity
                     {
                         if(response.body().Success)
                         {
+                            MainActivity.preferences.edit().putString(MainActivity.usernameKey, user.UserName);
                             //Start new activity
                             Intent intent = new Intent(LoginActivity.this, NewsOverviewActivity.class);
                             startActivity(intent);
                         }
                         else
                         {
+                            showProgress(false);
                             invalidLogin();
                         }
                     }
                     else
                     {
+                        showProgress(false);
                         invalidLogin();
                     }
                 }
@@ -303,6 +310,7 @@ public class LoginActivity extends AppCompatActivity
     private void invalidLogin() {
         vh.mUsernameView.setError(getString(R.string.error_incorrect_username));
         vh.mPasswordView.setError(getString(R.string.error_incorrect_password));
+
 
         vh.mUsernameView.requestFocus();
     }
