@@ -23,6 +23,9 @@ public class NewsDetailsPage extends AppCompatActivity {
     private NewsItem newsItem;
     private NewsDetailPageViewHolder vh;
     private Menu menu;
+    public static final String likedKey = "news_liked";
+    public static final String articleIdKey = "news_liked_article";
+    public static final int requestCode = 676;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -118,6 +121,11 @@ public class NewsDetailsPage extends AppCompatActivity {
     @Override
     public boolean onSupportNavigateUp()
     {
+        Intent returnIntent = new Intent();
+        returnIntent.putExtra(likedKey, newsItem.isLiked);
+        returnIntent.putExtra(articleIdKey, newsItem.id);
+        setResult(requestCode, returnIntent);
+        //startActivityForResult(intent, requestCode);
         finish();
         return true;
     }

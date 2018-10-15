@@ -14,6 +14,9 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -39,6 +42,7 @@ public class NewsOverviewActivity extends AppCompatActivity implements Callback<
     private NewsOverviewViewHolder vh;
     public static final String newsGsonKey = "newsItem";
     public static final String newsImageGsonKey = "newsImage";
+    public static final int resultCode = 3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -69,6 +73,72 @@ public class NewsOverviewActivity extends AppCompatActivity implements Callback<
         });
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.news_overview_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        switch(item.getItemId())
+        {
+            case R.id.action_logout:
+                logout();
+                return true;
+            case R.id.action_liked:
+                likedArticles(item);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void likedArticles(MenuItem item)
+    {
+        item.setTitle(R.string.action_undo_filter);
+        getLikedNewsAsync();
+    }
+
+    private void getLikedNewsAsync() {
+        if(adapter != null) adapter.isLoading = true;
+        NewsReaderApplication.getApiService().likedArticles(NewsReaderApplication.authToken).enqueue(new Callback<NewsFeed>() {
+            @Override
+            public void onResponse(Call<NewsFeed> call, Response<NewsFeed> response) {
+                if(response.body() != null && response.body().results != null)
+                {
+                    if(response.body().results.size() > 0)
+                    {
+                        adapter.setNewsFeed(response.body(), true);
+                    }
+                    else if(adapter.newsFeed != null && adapter.newsFeed.results.size() == 0)
+                    {
+                        vh.newsItemsList.setVisibility(View.GONE);
+                        vh.resultsView.setVisibility(View.VISIBLE);
+                    }
+                }
+                else if(adapter != null)
+                    adapter.isLoading = false;
+            }
+
+            @Override
+            public void onFailure(Call<NewsFeed> call, Throwable t) {
+                adapter.isLoading = false;
+                Toast.makeText(NewsOverviewActivity.this, R.string.error_unknown_error, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void logout()
+    {
+        NewsReaderApplication.authToken = null;
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivity(intent);
+    }
+
     protected void getNewsAsync(int fromId)
     {
         if(adapter != null) adapter.isLoading = true;
@@ -84,7 +154,7 @@ public class NewsOverviewActivity extends AppCompatActivity implements Callback<
         {
             if(response.body().results.size() > 0)
             {
-                adapter.setNewsFeed(response.body());
+                adapter.setNewsFeed(response.body(), false);
             }
             else if(adapter.newsFeed != null && adapter.newsFeed.results.size() == 0)
             {
@@ -103,6 +173,28 @@ public class NewsOverviewActivity extends AppCompatActivity implements Callback<
         Toast.makeText(this, R.string.error_unknown_error, Toast.LENGTH_SHORT).show();
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        super.onActivityResult(requestCode,resultCode,data);
+
+        switch (resultCode)
+        {
+            case (NewsDetailsPage.requestCode):
+            {
+                if (data.hasExtra(NewsDetailsPage.likedKey) && data.hasExtra(NewsDetailsPage.articleIdKey)) {
+                    int id = data.getIntExtra(NewsDetailsPage.articleIdKey, 0);
+                    boolean liked = data.getBooleanExtra(NewsDetailsPage.likedKey, false);
+                    for (NewsItem item : adapter.newsFeed.results)
+                    {
+                        if (item.id == id)
+                            item.isLiked = liked;
+                    }
+                }
+                break;
+            }
+        }
+    }
 
     private class NewsOverviewAdapter extends android.support.v7.widget.RecyclerView.Adapter<NewsItemViewHolder>
     {
@@ -151,7 +243,7 @@ public class NewsOverviewActivity extends AppCompatActivity implements Callback<
             String gson = new Gson().toJson(newsFeed.results.get(i));
             intent.putExtra(newsGsonKey, gson);
 
-            startActivity(intent);
+            startActivityForResult(intent, resultCode);
         }
 
         @Override
@@ -164,23 +256,28 @@ public class NewsOverviewActivity extends AppCompatActivity implements Callback<
 
         public void Clear()
         {
-            newsFeed.results.clear();
-            notifyDataSetChanged();
+            this.newsFeed.results.clear();
         }
 
-        public void setNewsFeed(NewsFeed newsFeed){
-            if(this.newsFeed != null)
-            {
+        public void setNewsFeed(NewsFeed newsFeed, boolean clearCurrent)
+        {
+            if (this.newsFeed != null) {
                 this.newsFeed.nextId = newsFeed.nextId;
+
+                if(clearCurrent)
+                    this.newsFeed.results.clear();
                 this.newsFeed.results.addAll(newsFeed.results);
             }
             else
                 this.newsFeed = newsFeed;
+
             notifyDataSetChanged();
-            if(vh.swipeRefreshLayout.isRefreshing()){
+            if (vh.swipeRefreshLayout.isRefreshing())
+            {
                 vh.swipeRefreshLayout.setRefreshing(false);
             }
             isLoading = false;
+
         }
     }
 

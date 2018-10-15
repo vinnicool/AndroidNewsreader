@@ -28,4 +28,7 @@ public interface ApiServices {
 
     @DELETE("Articles/{id}//like")
     Call<Void> unLikeArticle(@Path("id") int articleId, @Header("x-authtoken") String token);
+
+    @GET("Articles/liked")
+    Call<NewsFeed> likedArticles(@Header("x-authtoken") String token);
 }
