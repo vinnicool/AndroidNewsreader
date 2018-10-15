@@ -186,7 +186,7 @@ public class LoginActivity extends AppCompatActivity
                     if(response.isSuccessful() && response.body() != null)
                     {
                          NewsReaderApplication.authToken = response.body().authToken;
-                         NewsReaderApplication.getPreferences().edit().putString(NewsReaderApplication.authKey, response.body().authToken);
+                         NewsReaderApplication.getPreferences().edit().putString(NewsReaderApplication.authKey, response.body().authToken).apply();
                          //Start new activity
                          Intent intent = new Intent(LoginActivity.this, NewsOverviewActivity.class);
                          startActivity(intent);

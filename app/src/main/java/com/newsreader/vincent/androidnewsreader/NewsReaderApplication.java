@@ -20,6 +20,7 @@ public class NewsReaderApplication extends Application
     public static SharedPreferences preferences;
     public static final String authKey = "AuthToken";
     public static ImageLoader imageLoader;
+    public static final String prefFileName = "myPrefs";
 
     public static NewsReaderApplication application;
 
@@ -70,16 +71,9 @@ public class NewsReaderApplication extends Application
     {
         if(preferences == null)
         {
-            preferences = PreferenceManager.getDefaultSharedPreferences(context);
+            preferences = context.getSharedPreferences(prefFileName, Context.MODE_PRIVATE);
         }
         return preferences;
-    }
-
-    public SharedPreferences getPreferences(Context context)
-    {
-        if(preferences == null)
-            preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        return  preferences;
     }
 
     public static ImageLoader getImageLoader()
