@@ -1,12 +1,18 @@
 package com.newsreader.vincent.androidnewsreader;
 
+import android.app.ActivityOptions;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.util.Pair;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +21,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
 import java.util.HashMap;
@@ -29,22 +36,45 @@ import retrofit2.Retrofit;
 public class NewsOverviewActivity extends AppCompatActivity implements Callback<NewsFeed>
 {
     private NewsOverviewAdapter adapter;
-    private NewsOverviewViewholder vh;
+    private NewsOverviewViewHolder vh;
+    public static final String newsGsonKey = "newsItem";
+    public static final String newsImageGsonKey = "newsImage";
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_news_overview);
-        vh = new NewsOverviewViewholder(this);
-        getNewsAsync();
+        vh = new NewsOverviewViewHolder(this);
+        adapter = new NewsOverviewAdapter(null, this);
+        vh.newsItemsList.setAdapter(adapter);
+        vh.newsItemsList.setLayoutManager(new LinearLayoutManager(this));
+
+        vh.swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                if(adapter == null || adapter.isLoading) return;
+                getNewsAsync(0);
+            }
+        });
+        vh.newsItemsList.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+
+                if(adapter != null || !adapter.isLoading && !recyclerView.canScrollVertically(1)){
+                    getNewsAsync(adapter.getLastItemId());
+                }
+            }
+        });
     }
 
-    private void getNewsAsync()
+    protected void getNewsAsync(int fromId)
     {
+        if(adapter != null) adapter.isLoading = true;
         Map<String,String> map = new HashMap<>();
-        map.put("count", "10");
-        MainActivity.service.getArticles(map).enqueue(this);
+        map.put("count", "18");
+        NewsReaderApplication.getApiService().getArticles(fromId != 0 ? Integer.toString(fromId) : "", map, NewsReaderApplication.authToken).enqueue(this);
     }
 
     @Override
@@ -52,22 +82,24 @@ public class NewsOverviewActivity extends AppCompatActivity implements Callback<
     {
         if(response.body() != null && response.body().results != null)
         {
-            if(response.body().results.length > 0) {
-                adapter = new NewsOverviewAdapter(response.body(), this);
-                vh.newsItemsList.setAdapter(adapter);
-                vh.newsItemsList.setLayoutManager(new LinearLayoutManager(this));
+            if(response.body().results.size() > 0)
+            {
+                adapter.setNewsFeed(response.body());
             }
-            else
+            else if(adapter.newsFeed != null && adapter.newsFeed.results.size() == 0)
             {
                 vh.newsItemsList.setVisibility(View.GONE);
                 vh.resultsView.setVisibility(View.VISIBLE);
             }
         }
+        else if(adapter != null)
+            adapter.isLoading = false;
     }
 
     @Override
     public void onFailure(Call<NewsFeed> call, Throwable t)
     {
+        adapter.isLoading = false;
         Toast.makeText(this, R.string.error_unknown_error, Toast.LENGTH_SHORT).show();
     }
 
@@ -76,11 +108,13 @@ public class NewsOverviewActivity extends AppCompatActivity implements Callback<
     {
         private NewsFeed newsFeed;
         private NewsOverviewActivity activity;
+        protected boolean isLoading = false;
 
         public NewsOverviewAdapter(NewsFeed newsFeed, NewsOverviewActivity activity)
         {
             this.newsFeed = newsFeed;
             this.activity = activity;
+            activity.getNewsAsync(0);
         }
 
         @NonNull
@@ -92,33 +126,75 @@ public class NewsOverviewActivity extends AppCompatActivity implements Callback<
         }
 
         @Override
-        public void onBindViewHolder(@NonNull final NewsItemViewHolder newsItemViewHolder, int i)
+        public void onBindViewHolder(@NonNull final NewsItemViewHolder newsItemViewHolder, final int i)
         {
             newsItemViewHolder.image.setImageBitmap(null);
             newsItemViewHolder.title.setText(null);
 
-            NewsItem item = newsFeed.results[i];
+            NewsItem item = newsFeed.results.get(i);
 
             newsItemViewHolder.title.setText(item.title);
-            MainActivity.imageLoader.displayImage(item.image, newsItemViewHolder.image);
+            NewsReaderApplication.getImageLoader().displayImage(item.image, newsItemViewHolder.image);
+            newsItemViewHolder.layout.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    openNewsDetailPage(i, v);
+                }
+            });
+        }
+
+        private void openNewsDetailPage(int i, View view)
+        {
+//            ActivityOptionsCompat activityOptions = ActivityOptionsCompat.makeSceneTransitionAnimation(NewsOverviewActivity.this,
+//                    new Pair<>(view.findViewById(R.id.news_image_thumbnail), NewsDetailsPage.imageViewName));
+            Intent intent = new Intent(NewsOverviewActivity.this, NewsDetailsPage.class);
+            String gson = new Gson().toJson(newsFeed.results.get(i));
+            intent.putExtra(newsGsonKey, gson);
+
+            startActivity(intent);
         }
 
         @Override
         public int getItemCount()
         {
-            return newsFeed.results.length;
+            return newsFeed == null ? 0 : newsFeed.results.size();
+        }
+
+        public int getLastItemId() { return  newsFeed.nextId; }
+
+        public void Clear()
+        {
+            newsFeed.results.clear();
+            notifyDataSetChanged();
+        }
+
+        public void setNewsFeed(NewsFeed newsFeed){
+            if(this.newsFeed != null)
+            {
+                this.newsFeed.nextId = newsFeed.nextId;
+                this.newsFeed.results.addAll(newsFeed.results);
+            }
+            else
+                this.newsFeed = newsFeed;
+            notifyDataSetChanged();
+            if(vh.swipeRefreshLayout.isRefreshing()){
+                vh.swipeRefreshLayout.setRefreshing(false);
+            }
+            isLoading = false;
         }
     }
 
-    private class NewsOverviewViewholder
+    private class NewsOverviewViewHolder
     {
         public RelativeLayout resultsView;
         public RecyclerView newsItemsList;
+        public SwipeRefreshLayout swipeRefreshLayout;
         private NewsOverviewActivity activity;
 
-        public NewsOverviewViewholder(NewsOverviewActivity activity)
+        public NewsOverviewViewHolder(NewsOverviewActivity activity)
         {
             this.activity = activity;
+            this.swipeRefreshLayout = findViewById(R.id.news_overview_swipeContainer);
             this.resultsView = findViewById(R.id.noResultsLayout);
             this.newsItemsList = findViewById(R.id.newsoverview_list);
         }
@@ -126,6 +202,7 @@ public class NewsOverviewActivity extends AppCompatActivity implements Callback<
 
     private class NewsItemViewHolder extends android.support.v7.widget.RecyclerView.ViewHolder
     {
+        public RelativeLayout layout;
         public ImageView image;
         public TextView title;
 
@@ -133,6 +210,7 @@ public class NewsOverviewActivity extends AppCompatActivity implements Callback<
         {
             super(itemView);
 
+            layout = itemView.findViewById(R.id.news_view);
             image = itemView.findViewById(R.id.news_image_thumbnail);
             title = itemView.findViewById(R.id.news_title);
         }

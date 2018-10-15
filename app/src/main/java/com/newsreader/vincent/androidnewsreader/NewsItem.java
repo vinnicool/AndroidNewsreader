@@ -2,8 +2,6 @@ package com.newsreader.vincent.androidnewsreader;
 
 import com.google.gson.annotations.SerializedName;
 
-import java.util.List;
-
 public class NewsItem
 {
     @SerializedName("Id")

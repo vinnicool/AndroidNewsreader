@@ -178,14 +178,15 @@ public class LoginActivity extends AppCompatActivity
     {
         try
         {
-            MainActivity.service.login(user).enqueue(new Callback<AuthTokenHttpResponse>()
+            NewsReaderApplication.getApiService().login(user).enqueue(new Callback<AuthTokenHttpResponse>()
             {
                 @Override
                 public void onResponse(Call<AuthTokenHttpResponse> call, Response<AuthTokenHttpResponse> response)
                 {
                     if(response.isSuccessful() && response.body() != null)
                     {
-                         MainActivity.authToken = response.body().authToken;
+                         NewsReaderApplication.authToken = response.body().authToken;
+                         NewsReaderApplication.getPreferences().edit().putString(NewsReaderApplication.authKey, response.body().authToken);
                          //Start new activity
                          Intent intent = new Intent(LoginActivity.this, NewsOverviewActivity.class);
                          startActivity(intent);
@@ -217,7 +218,7 @@ public class LoginActivity extends AppCompatActivity
     {
         try
         {
-            MainActivity.service.register(user).enqueue(new Callback<CustomHttpResponse>()
+            NewsReaderApplication.getApiService().register(user).enqueue(new Callback<CustomHttpResponse>()
             {
                 @Override
                 public void onResponse(Call<CustomHttpResponse> call, Response<CustomHttpResponse> response)
@@ -226,10 +227,10 @@ public class LoginActivity extends AppCompatActivity
                     {
                         if(response.body().Success)
                         {
-                            MainActivity.preferences.edit().putString(MainActivity.usernameKey, user.UserName);
-                            //Start new activity
-                            Intent intent = new Intent(LoginActivity.this, NewsOverviewActivity.class);
-                            startActivity(intent);
+//                            MainActivity.preferences.edit().putString(MainActivity.authKey, response.body().Message);
+//                            //Start new activity
+//                            Intent intent = new Intent(LoginActivity.this, NewsOverviewActivity.class);
+//                            startActivity(intent);
                         }
                         else
                         {

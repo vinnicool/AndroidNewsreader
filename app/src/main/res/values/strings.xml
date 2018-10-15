@@ -16,4 +16,5 @@
     <string name="no_account">"Don't have an account yet? Register with underlying button with the current filled in username and password."</string>
     <string name="action_register">Register</string>
     <string name="no_results">There are no results from this query, please check your filters</string>
+    <string name="action_like">Like</string>
 </resources>

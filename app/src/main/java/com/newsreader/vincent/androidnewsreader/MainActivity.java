@@ -13,38 +13,27 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
-
-    public static Retrofit retrofit;
-    public static ApiServices service;
-    public static String authToken;
-    public static SharedPreferences preferences;
-    public static final String usernameKey = "UsernameToken";
-    public static ImageLoader imageLoader;
-
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+    }
 
-        retrofit = new Retrofit.Builder()
-                .baseUrl("http://inhollandbackend.azurewebsites.net/api/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-        service = retrofit.create(ApiServices.class);
+    @Override
+    public void onStart()
+    {
+        super.onStart();
 
-        preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        String username = preferences.getString("UsernameToken", null);
-
-        imageLoader = ImageLoader.getInstance();
-        imageLoader.init(ImageLoaderConfiguration.createDefault(this));
-
-        if(authToken != null)
+        String prefAuthToken = NewsReaderApplication.getPreferences().getString(NewsReaderApplication.authKey, null);
+        if(NewsReaderApplication.authToken != null)
         {
             Intent intent = new Intent(this, NewsOverviewActivity.class);
             startActivity(intent);
         }
-        else if(username != null)
+        else if(prefAuthToken != null)
         {
+            NewsReaderApplication.authToken = prefAuthToken;
             Intent intent = new Intent(this, NewsOverviewActivity.class);
             startActivity(intent);
         }
@@ -54,6 +43,4 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         }
     }
-
-
 }
