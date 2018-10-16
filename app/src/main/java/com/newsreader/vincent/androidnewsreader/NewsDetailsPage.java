@@ -3,6 +3,10 @@ package com.newsreader.vincent.androidnewsreader;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Html;
+import android.text.method.LinkMovementMethod;
+import android.text.method.MovementMethod;
+import android.text.util.Linkify;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -44,7 +48,10 @@ public class NewsDetailsPage extends AppCompatActivity {
         {
             vh.textView.append(cat.name + ", ");
         }
+        //vh.sourceView.setText(Html.fromHtml("&lt;a href=" + '"' + newsItem.url + '"' + "&gt;" + newsItem.url + "&lt; /a &gt", 0));
         vh.sourceView.setText(newsItem.url);
+        Linkify.addLinks(vh.sourceView, Linkify.WEB_URLS);
+        //vh.sourceView.setMovementMethod(LinkMovementMethod.getInstance());
         NewsReaderApplication.getImageLoader().displayImage(newsItem.image, vh.imageView);
     }
 

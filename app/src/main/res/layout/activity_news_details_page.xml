@@ -37,7 +37,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginVertical="20dp"
-            android:layout_below="@+id/news_title_detail"
+            android:layout_below="@id/news_title_detail"
             />
         <TextView
             android:id="@+id/news_source_detail"
@@ -45,6 +45,8 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/news_text_detail"
             android:layout_marginVertical="20dp"
+            android:textColor="@color/colorLinkPrimary"
+            android:linksClickable="true"
             />
 
     </RelativeLayout>
