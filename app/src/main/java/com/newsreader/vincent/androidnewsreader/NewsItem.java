@@ -12,6 +12,8 @@ public class NewsItem
     public String title;
     @SerializedName("PublishDate")
     public String publishDate;
+    @SerializedName("Summary")
+    public String summary;
     @SerializedName("Image")
     public String image;
     @SerializedName("Url")

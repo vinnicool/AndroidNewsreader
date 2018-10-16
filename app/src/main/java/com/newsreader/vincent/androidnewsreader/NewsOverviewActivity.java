@@ -185,10 +185,21 @@ public class NewsOverviewActivity extends AppCompatActivity implements Callback<
                 if (data.hasExtra(NewsDetailsPage.likedKey) && data.hasExtra(NewsDetailsPage.articleIdKey)) {
                     int id = data.getIntExtra(NewsDetailsPage.articleIdKey, 0);
                     boolean liked = data.getBooleanExtra(NewsDetailsPage.likedKey, false);
+                    int i = 0;
                     for (NewsItem item : adapter.newsFeed.results)
                     {
-                        if (item.id == id)
+                        if (item.id == id) {
                             item.isLiked = liked;
+                            break;
+                        }
+                        i++;
+                    }
+                    if(liked) {
+                        NewsItemViewHolder v = (NewsItemViewHolder) vh.newsItemsList.findViewHolderForAdapterPosition(i);
+                        v.layout.setBackgroundColor(getResources().getColor(R.color.colorSuperLightBlue));
+                    }else {
+                        NewsItemViewHolder v = (NewsItemViewHolder) vh.newsItemsList.findViewHolderForAdapterPosition(i);
+                        v.layout.setBackgroundColor(getResources().getColor(R.color.tranparent));
                     }
                 }
                 break;
@@ -220,7 +231,7 @@ public class NewsOverviewActivity extends AppCompatActivity implements Callback<
         @Override
         public void onBindViewHolder(@NonNull final NewsItemViewHolder newsItemViewHolder, final int i)
         {
-            newsItemViewHolder.image.setImageBitmap(null);
+            newsItemViewHolder.image.setImageResource(R.drawable.ic_placeholder);
             newsItemViewHolder.title.setText(null);
 
             NewsItem item = newsFeed.results.get(i);
@@ -233,6 +244,9 @@ public class NewsOverviewActivity extends AppCompatActivity implements Callback<
                     openNewsDetailPage(i, v);
                 }
             });
+            if(item.isLiked){
+                newsItemViewHolder.layout.setBackgroundColor(getResources().getColor(R.color.colorSuperLightBlue));
+            }
         }
 
         private void openNewsDetailPage(int i, View view)
@@ -252,7 +266,7 @@ public class NewsOverviewActivity extends AppCompatActivity implements Callback<
             return newsFeed == null ? 0 : newsFeed.results.size();
         }
 
-        public int getLastItemId() { return  newsFeed.nextId; }
+        public int getLastItemId() { return  newsFeed == null ? 0 : newsFeed.nextId; }
 
         public void Clear()
         {

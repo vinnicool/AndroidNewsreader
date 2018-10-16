@@ -19,9 +19,9 @@
                                   <option name="values">
                                     <map>
                                       <entry key="assetType" value="IMAGE" />
-                                      <entry key="imageAsset" value="D:\Downloads\like (1).png" />
-                                      <entry key="outputName" value="ic_action_like_reversed" />
-                                      <entry key="theme" value="CUSTOM" />
+                                      <entry key="imageAsset" value="D:\Downloads\Placeholder.png" />
+                                      <entry key="outputName" value="ic_placeholder" />
+                                      <entry key="theme" value="HOLO_DARK" />
                                       <entry key="themeColor" value="ffffff" />
                                     </map>
                                   </option>

@@ -44,10 +44,7 @@ public class NewsDetailsPage extends AppCompatActivity {
         vh = new NewsDetailPageViewHolder(this);
 
         vh.titleView.setText(newsItem.title);
-        for(NewsItemCategory cat : newsItem.categories)
-        {
-            vh.textView.append(cat.name + ", ");
-        }
+        vh.textView.setText(newsItem.summary);
         //vh.sourceView.setText(Html.fromHtml("&lt;a href=" + '"' + newsItem.url + '"' + "&gt;" + newsItem.url + "&lt; /a &gt", 0));
         vh.sourceView.setText(newsItem.url);
         Linkify.addLinks(vh.sourceView, Linkify.WEB_URLS);
