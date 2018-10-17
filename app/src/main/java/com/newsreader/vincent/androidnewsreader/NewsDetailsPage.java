@@ -45,7 +45,7 @@ public class NewsDetailsPage extends AppCompatActivity {
         String gson = intent.getStringExtra(NewsOverviewActivity.newsGsonKey);
         newsItem = new Gson().fromJson(gson, NewsItem.class);
         vh = new NewsDetailPageViewHolder(this);
-        vh.imageView.setImageResource(R.mipmap.ic_launcher);
+        vh.imageView.setImageResource(R.drawable.placeholder);
         vh.titleView.setText(newsItem.title);
         vh.textView.setText(newsItem.summary);
         LocalDateTime date = LocalDateTime.parse(newsItem.publishDate);
@@ -54,10 +54,16 @@ public class NewsDetailsPage extends AppCompatActivity {
         vh.publishDateView.setText(formattedDate);
         //vh.sourceView.setText(Html.fromHtml("&lt;a href=" + '"' + newsItem.url + '"' + "&gt;" + newsItem.url + "&lt; /a &gt", 0));
         vh.sourceView.setText(newsItem.url);
+        boolean first = true;
+        for(NewsItemCategory category : newsItem.categories) {
+            vh.categoriesView.append(!first ? ", " : "");
+            vh.categoriesView.append(category.name);
+            first = false;
+        }
         Linkify.addLinks(vh.sourceView, Linkify.WEB_URLS);
         //vh.sourceView.setMovementMethod(LinkMovementMethod.getInstance());
 
-        //NewsReaderApplication.getImageLoader().displayImage(newsItem.image, vh.imageView);
+        NewsReaderApplication.getImageLoader().displayImage(newsItem.image, vh.imageView);
     }
 
     @Override
@@ -148,6 +154,7 @@ public class NewsDetailsPage extends AppCompatActivity {
         public TextView textView;
         public TextView sourceView;
         public TextView publishDateView;
+        public TextView categoriesView;
 
         public NewsDetailPageViewHolder(NewsDetailsPage activity)
         {
@@ -156,6 +163,7 @@ public class NewsDetailsPage extends AppCompatActivity {
             textView = findViewById(R.id.news_text_detail);
             sourceView = findViewById(R.id.news_source_detail);
             publishDateView = findViewById(R.id.news_publisonhDate_detail);
+            categoriesView = findViewById(R.id.news_categories_detail);
         }
     }
 }
