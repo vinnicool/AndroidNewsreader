@@ -16,6 +16,9 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -42,14 +45,19 @@ public class NewsDetailsPage extends AppCompatActivity {
         String gson = intent.getStringExtra(NewsOverviewActivity.newsGsonKey);
         newsItem = new Gson().fromJson(gson, NewsItem.class);
         vh = new NewsDetailPageViewHolder(this);
-
+        vh.imageView.setImageResource(R.mipmap.ic_launcher);
         vh.titleView.setText(newsItem.title);
         vh.textView.setText(newsItem.summary);
+        LocalDateTime date = LocalDateTime.parse(newsItem.publishDate);
+        String formattedDate = date.getDayOfMonth() + "-" + date.getMonthValue() + "-" + date.getYear()
+                                + " " + date.getHour() + ":" + date.getMinute() + ":" + date.getSecond();
+        vh.publishDateView.setText(formattedDate);
         //vh.sourceView.setText(Html.fromHtml("&lt;a href=" + '"' + newsItem.url + '"' + "&gt;" + newsItem.url + "&lt; /a &gt", 0));
         vh.sourceView.setText(newsItem.url);
         Linkify.addLinks(vh.sourceView, Linkify.WEB_URLS);
         //vh.sourceView.setMovementMethod(LinkMovementMethod.getInstance());
-        NewsReaderApplication.getImageLoader().displayImage(newsItem.image, vh.imageView);
+
+        //NewsReaderApplication.getImageLoader().displayImage(newsItem.image, vh.imageView);
     }
 
     @Override
@@ -139,6 +147,7 @@ public class NewsDetailsPage extends AppCompatActivity {
         public ImageView imageView;
         public TextView textView;
         public TextView sourceView;
+        public TextView publishDateView;
 
         public NewsDetailPageViewHolder(NewsDetailsPage activity)
         {
@@ -146,6 +155,7 @@ public class NewsDetailsPage extends AppCompatActivity {
             imageView = findViewById(R.id.news_image_detail);
             textView = findViewById(R.id.news_text_detail);
             sourceView = findViewById(R.id.news_source_detail);
+            publishDateView = findViewById(R.id.news_publisonhDate_detail);
         }
     }
 }
