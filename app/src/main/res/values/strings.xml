@@ -20,4 +20,8 @@
     <string name="action_logout">Logout</string>
     <string name="action_liked">Liked articles</string>
     <string name="action_undo_filter">Clear filter</string>
+    <string name="error_not_logged_in">This action cannot be done without logging in.</string>
+    <string name="registered">You have been succesfuly registered. Please feel free to login now.</string>
+    <string name="continue_no_login">Continue without login</string>
+    <string name="action_share">Share</string>
 </resources>

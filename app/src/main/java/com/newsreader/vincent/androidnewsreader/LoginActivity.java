@@ -69,10 +69,22 @@ public class LoginActivity extends AppCompatActivity
                 attemptRegister();
             }
         });
-
+        vh.mContinueNoLogin.setOnClickListener(new OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                continueWithoutLogin();
+            }
+        });
 
     }
 
+    private void continueWithoutLogin()
+    {
+        Intent intent = new Intent(LoginActivity.this, NewsOverviewActivity.class);
+        startActivity(intent);
+    }
 
 
     /**
@@ -227,6 +239,7 @@ public class LoginActivity extends AppCompatActivity
                     {
                         if(response.body().Success)
                         {
+                              Toast.makeText(LoginActivity.this, R.string.registered, Toast.LENGTH_SHORT).show();
 //                            MainActivity.preferences.edit().putString(MainActivity.authKey, response.body().Message);
 //                            //Start new activity
 //                            Intent intent = new Intent(LoginActivity.this, NewsOverviewActivity.class);
@@ -332,6 +345,8 @@ public class LoginActivity extends AppCompatActivity
         public View mLoginFormView;
         public View mProgressView;
 
+        public Button mContinueNoLogin;
+
         private LoginActivity loginActivity;
 
         public LoginViewHolder(LoginActivity loginActivity)
@@ -346,6 +361,8 @@ public class LoginActivity extends AppCompatActivity
 
             mLoginFormView = findViewById(R.id.login_form);
             mProgressView = findViewById(R.id.login_progress);
+
+            mContinueNoLogin = findViewById(R.id.continue_no_login);
         }
     }
 

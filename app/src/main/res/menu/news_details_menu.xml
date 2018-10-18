@@ -2,8 +2,14 @@
 <menu xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android">
     <item
+        android:id="@+id/action_share"
+        android:icon="@drawable/ic_share"
+        android:title="@string/action_share"
+        app:showAsAction="ifRoom"
+         />
+    <item
         android:id="@+id/action_like"
         android:icon="@drawable/ic_action_like_reversed"
         android:title="@string/action_like"
-        app:showAsAction="always" />
+        app:showAsAction="ifRoom" />
 </menu>

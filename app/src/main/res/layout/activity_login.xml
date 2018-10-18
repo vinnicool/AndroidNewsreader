@@ -89,7 +89,14 @@
                 android:textStyle="bold"
             />
 
-
+            <Button
+                android:id="@+id/continue_no_login"
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_marginTop="8dp"
+                android:textStyle="bold"
+                android:text="@string/continue_no_login"
+                />
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

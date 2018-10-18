@@ -104,6 +104,12 @@ public class NewsOverviewActivity extends AppCompatActivity implements Callback<
     }
 
     private void getLikedNewsAsync() {
+        if(NewsReaderApplication.authToken == null || NewsReaderApplication.authToken == "")
+        {
+            Toast.makeText(this, R.string.error_not_logged_in, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         if(adapter != null) adapter.isLoading = true;
         NewsReaderApplication.getApiService().likedArticles(NewsReaderApplication.authToken).enqueue(new Callback<NewsFeed>() {
             @Override

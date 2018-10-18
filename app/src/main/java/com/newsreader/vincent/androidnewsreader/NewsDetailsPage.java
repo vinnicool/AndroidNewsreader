@@ -11,6 +11,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.ImageView;
+import android.widget.ShareActionProvider;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -65,6 +66,7 @@ public class NewsDetailsPage extends AppCompatActivity {
     {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.news_details_menu, menu);
+
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -88,13 +90,30 @@ public class NewsDetailsPage extends AppCompatActivity {
             case R.id.action_like:
                 likeNewsItem();
                 return true;
+            case R.id.action_share:
+                shareArticle();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
 
+    private void shareArticle()
+    {
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.putExtra(intent.EXTRA_SUBJECT, newsItem.title);
+        intent.putExtra(intent.EXTRA_TEXT, newsItem.summary + "\n" + newsItem.url);
+        intent.setType("text/plain");
+        startActivity(intent);
+    }
+
     private void likeNewsItem()
     {
+        if(NewsReaderApplication.authToken == null || NewsReaderApplication.authToken == "")
+        {
+            Toast.makeText(this, R.string.error_not_logged_in, Toast.LENGTH_SHORT).show();
+            return;
+        }
         if(newsItem.isLiked)
         {
             NewsReaderApplication.getApiService().unLikeArticle(newsItem.id, NewsReaderApplication.authToken).enqueue(new Callback() {
@@ -137,7 +156,7 @@ public class NewsDetailsPage extends AppCompatActivity {
         returnIntent.putExtra(likedKey, newsItem.isLiked);
         returnIntent.putExtra(articleIdKey, newsItem.id);
         setResult(requestCode, returnIntent);
-        //startActivityForResult(intent, requestCode);
+
         finish();
         return true;
     }
