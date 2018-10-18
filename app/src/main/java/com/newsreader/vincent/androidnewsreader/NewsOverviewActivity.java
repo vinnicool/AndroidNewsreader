@@ -25,6 +25,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
 import java.util.HashMap;
@@ -243,7 +244,7 @@ public class NewsOverviewActivity extends AppCompatActivity implements Callback<
             NewsItem item = newsFeed.results.get(i);
 
             newsItemViewHolder.title.setText(item.title);
-            NewsReaderApplication.getImageLoader().displayImage(item.image, newsItemViewHolder.image);
+            NewsReaderApplication.getImageLoader().displayImage(item.image, newsItemViewHolder.image, new DisplayImageOptions.Builder().cacheInMemory(true).cacheOnDisk(true).build());
             newsItemViewHolder.layout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
